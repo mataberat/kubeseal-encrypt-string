@@ -1,5 +1,5 @@
 BINARY_NAME=kubeseal-encrypt-string
-VERSION=1.0.0
+VERSION=v1.0.1
 BUILD_TIME=$(shell date +%FT%T%z)
 
 # Build directories

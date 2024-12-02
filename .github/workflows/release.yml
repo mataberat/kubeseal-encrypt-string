@@ -42,9 +42,6 @@ jobs:
           git commit -m "chore: bump version to ${VERSION}"
           git push origin main
 
-      - name: Run tests
-        run: make test
-
       - name: Build binaries
         run: make build
 

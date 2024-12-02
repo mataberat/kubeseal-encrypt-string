@@ -122,13 +122,13 @@ func (e *Encryptor) runKubeseal() error {
 
 	cmd := exec.Command(kubesealPath,
 		"--format", "yaml",
+		"--scope", "strict",
 		"--controller-namespace", e.config.ControllerNs,
 		"--controller-name", e.config.ControllerName,
-		"-f", unsealedPath,
-		"-o", sealedPath,
+		"--secret-file", unsealedPath,
+		"--sealed-secret-file", sealedPath,
 	)
 
-	// Capture command output
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("kubeseal failed: %v\nOutput: %s", err, string(output))

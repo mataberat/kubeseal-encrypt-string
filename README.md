@@ -1,6 +1,6 @@
 # kubeseal-encrypt-string
 
-A simple CLI tool to encrypt strings using Bitnami's Sealed Secrets for Kubernetes. This tool provides a simple way to encrypt sensitive data that can be safely stored in Git repositories and decrypted only within your Kubernetes cluster.
+A simple CLI tool to encrypt a string using Bitnami's Sealed Secrets for Kubernetes. This tool provides a simple way to encrypt sensitive data that can be safely stored in Git repositories and decrypted only within your Kubernetes cluster.
 
 ## Prerequisites
 

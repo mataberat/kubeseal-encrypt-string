@@ -2,6 +2,12 @@
 
 A simple CLI tool to encrypt a string using Bitnami's Sealed Secrets for Kubernetes. This tool provides a simple way to encrypt sensitive data that can be safely stored in Git repositories and decrypted only within your Kubernetes cluster.
 
+
+
+https://github.com/user-attachments/assets/6834c39c-a07f-4f1d-a4bc-b6b9e7df7146
+
+
+
 ## Prerequisites
 
 Before using this tool, ensure you have the following installed:

@@ -32,5 +32,17 @@ make build
 ## Usage
 
 ```bash
-kubeseal-encrypt-string --key <secret-key> --value <secret-value> --namespace <target-namespace>
+# Basic usage with required flags
+kubeseal-encrypt-string --key mysecret --value supersecret --namespace production
+
+# Using custom controller namespace
+kubeseal-encrypt-string --key mysecret --value supersecret --namespace production --controller-namespace sealed-secrets
+
+# Using custom controller name and namespace
+kubeseal-encrypt-string --key mysecret --value supersecret --namespace production --controller-namespace sealed-secrets --controller-name sealed-secrets
+
+# Using environment variables for controller config
+export SEALED_SECRETS_CONTROLLER_NAMESPACE=sealed-secrets
+export SEALED_SECRETS_CONTROLLER_NAME=sealed-secrets
+kubeseal-encrypt-string --key mysecret --value supersecret --namespace production
 ```

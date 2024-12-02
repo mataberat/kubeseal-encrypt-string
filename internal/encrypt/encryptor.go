@@ -77,8 +77,8 @@ func (e *Encryptor) validateNamespace() error {
 		e.config.ControllerName,
 		"-n", e.config.ControllerNs)
 	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("❌ sealed-secrets controller not found: %v\nOutput: %s",
-			err, string(output))
+		return fmt.Errorf("❌ sealed-secrets controller not found in namespace %s: %v\nOutput: %s",
+			e.config.ControllerNs, err, string(output))
 	}
 
 	return nil
@@ -96,7 +96,8 @@ func (e *Encryptor) createTempDir() error {
 func (e *Encryptor) promptConfirmation() error {
 	titleColor := color.New(color.FgCyan, color.Bold)
 	titleColor.Printf("\n🔒 Generating Sealed Secret\n")
-	color.New(color.FgYellow).Printf("📍 Namespace: %s\n", e.config.Namespace)
+	color.New(color.FgYellow).Printf("📍 Target Namespace: %s\n", e.config.Namespace)
+	color.New(color.FgBlue).Printf("🎯 Controller Namespace: %s\n", e.config.ControllerNs)
 	color.New(color.FgWhite).Print("Continue? [Y/N]: ")
 
 	var response string
@@ -317,7 +318,7 @@ func (e *Encryptor) printResult(encryptedValue string) {
 	titleColor.Printf("\n🎉 Sealed Secret Generated Successfully\n")
 	infoColor.Printf("\n📦 Controller: ")
 	fmt.Printf("%s/%s\n", e.config.ControllerNs, e.config.ControllerName)
-	infoColor.Printf("🌐 Namespace: ")
+	infoColor.Printf("🌐 Target Namespace: ")
 	fmt.Printf("%s\n", e.config.Namespace)
 	infoColor.Printf("\n🔑 Encrypted Value:\n")
 	valueColor.Printf("%s\n", encryptedValue)

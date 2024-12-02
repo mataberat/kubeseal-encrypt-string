@@ -1,49 +1,60 @@
 name: Release
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - 'v*' # Triggers on tags starting with "v"
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GH_PAT }}
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.23.3'
 
-      - name: Get release version
+      - name: Get Tag Version
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Switch to main branch
-        run: |
-          git fetch origin main
-          git checkout main
-
-      - name: Update Makefile version
+      - name: Update Makefile Version
         run: |
           sed -i "s/VERSION=.*/VERSION=${VERSION}/" Makefile
-
-      - name: Commit version update
-        run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add Makefile
           git commit -m "chore: bump version to ${VERSION}"
           git push origin main
 
-      - name: Build binaries
+      - name: Build Binaries
         run: make build
+
+      - name: Debug: List Build Directory
+        run: |
+          echo "Current working directory: $(pwd)"
+          ls -R build/
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: "Release ${{ github.ref_name }}"
+          body: |
+            ## Changes
+            - Updated version to ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
@@ -53,4 +64,4 @@ jobs:
             build/darwin-arm64/kubeseal-encrypt-string
             build/linux-amd64/kubeseal-encrypt-string
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

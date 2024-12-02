@@ -38,11 +38,6 @@ jobs:
       - name: Build Binaries
         run: make build
 
-      - name: Debug: List Build Directory
-        run: |
-          echo "Current working directory: $(pwd)"
-          ls -R build/
-
       - name: Create Release
         uses: actions/create-release@v1
         with:

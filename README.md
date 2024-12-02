@@ -8,15 +8,11 @@ Before using this tool, ensure you have the following installed:
 
 - **kubectl** (v1.29+)
 
-```bash
-  brew install kubectl
-```
+Installing [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 - **kubeseal** (v0.24.0+)
 
-```bash
-  brew install kubeseal
-```
+Installing [kubeseal](https://github.com/bitnami-labs/sealed-secrets?tab=readme-ov-file#kubeseal)
 
 ## Features
 

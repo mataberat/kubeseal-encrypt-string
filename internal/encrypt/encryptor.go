@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/google/uuid"
 )
 
@@ -68,7 +69,7 @@ func (e *Encryptor) validateNamespace() error {
 
 	cmd := exec.Command(kubectlPath, "get", "namespace", e.config.Namespace)
 	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("namespace %s not found or not accessible: %v\nOutput: %s",
+		return fmt.Errorf("❌ namespace %s not found or not accessible: %v\nOutput: %s",
 			e.config.Namespace, err, string(output))
 	}
 
@@ -76,7 +77,7 @@ func (e *Encryptor) validateNamespace() error {
 		e.config.ControllerName,
 		"-n", e.config.ControllerNs)
 	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("sealed-secrets controller not found: %v\nOutput: %s",
+		return fmt.Errorf("❌ sealed-secrets controller not found: %v\nOutput: %s",
 			err, string(output))
 	}
 
@@ -93,11 +94,15 @@ func (e *Encryptor) createTempDir() error {
 }
 
 func (e *Encryptor) promptConfirmation() error {
-	fmt.Printf("You will generate a vaulted string on namespace %s. Do you want to continue [Y/N]? ", e.config.Namespace)
+	titleColor := color.New(color.FgCyan, color.Bold)
+	titleColor.Printf("\n🔒 Generating Sealed Secret\n")
+	color.New(color.FgYellow).Printf("📍 Namespace: %s\n", e.config.Namespace)
+	color.New(color.FgWhite).Print("Continue? [Y/N]: ")
+
 	var response string
 	fmt.Scanln(&response)
 	if strings.ToUpper(response) != "Y" {
-		return fmt.Errorf("operation cancelled by user")
+		return fmt.Errorf("❌ Operation cancelled by user")
 	}
 	return nil
 }
@@ -131,18 +136,18 @@ func (e *Encryptor) findKubeseal() (string, error) {
 	}
 
 	if path, err := exec.LookPath("kubeseal"); err == nil {
-		fmt.Printf("Using kubeseal from: %s\n", path)
+		color.New(color.FgBlue).Printf("🔧 Using kubeseal from: %s\n", path)
 		return path, nil
 	}
 
 	for _, path := range paths {
 		if _, err := os.Stat(path); err == nil {
-			fmt.Printf("Using kubeseal from: %s\n", path)
+			color.New(color.FgBlue).Printf("🔧 Using kubeseal from: %s\n", path)
 			return path, nil
 		}
 	}
 
-	return "", fmt.Errorf("kubeseal not found in system")
+	return "", fmt.Errorf("❌ kubeseal not found in system")
 }
 
 func (e *Encryptor) findKubectl() (string, error) {
@@ -154,18 +159,18 @@ func (e *Encryptor) findKubectl() (string, error) {
 	}
 
 	if path, err := exec.LookPath("kubectl"); err == nil {
-		fmt.Printf("Using kubectl from: %s\n", path)
+		color.New(color.FgBlue).Printf("🔧 Using kubectl from: %s\n", path)
 		return path, nil
 	}
 
 	for _, path := range paths {
 		if _, err := os.Stat(path); err == nil {
-			fmt.Printf("Using kubectl from: %s\n", path)
+			color.New(color.FgBlue).Printf("🔧 Using kubectl from: %s\n", path)
 			return path, nil
 		}
 	}
 
-	return "", fmt.Errorf("kubectl not found in system")
+	return "", fmt.Errorf("❌ kubectl not found in system")
 }
 
 func (e *Encryptor) runKubeseal() error {
@@ -188,14 +193,14 @@ func (e *Encryptor) runKubeseal() error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("kubeseal failed: %v\nOutput: %s", err, string(output))
+		return fmt.Errorf("❌ kubeseal failed: %v\nOutput: %s", err, string(output))
 	}
 
 	return nil
 }
 
 func (e *Encryptor) validateSecret(encryptedValue string) error {
-	fmt.Printf("Validating sealed secret with name: %s\n", e.testName)
+	color.New(color.FgCyan).Printf("\n🔍 Validating sealed secret: %s\n", e.testName)
 
 	sealedSecret := fmt.Sprintf(`apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
@@ -207,26 +212,26 @@ spec:
     %s: %s`, e.testName, e.config.Namespace, e.config.Key, encryptedValue)
 
 	if err := e.kubectlApply([]byte(sealedSecret)); err != nil {
-		return fmt.Errorf("failed to apply test sealed secret: %w", err)
+		return fmt.Errorf("❌ failed to apply test sealed secret: %w", err)
 	}
 	defer e.cleanupTestResources(e.testName)
 
-	fmt.Println("Waiting for secret creation...")
+	color.New(color.FgYellow).Println("⏳ Waiting for secret creation...")
 	for i := 0; i < 10; i++ {
 		if secretValue, err := e.getSecretValue(e.testName, e.config.Key); err == nil {
 			decodedValue, err := e.decodeBase64(secretValue)
 			if err != nil {
-				return fmt.Errorf("failed to decode secret value: %w", err)
+				return fmt.Errorf("❌ failed to decode secret value: %w", err)
 			}
 			if decodedValue == e.config.Value {
-				fmt.Println("Secret validation successful")
+				color.New(color.FgGreen).Println("✅ Secret validation successful")
 				return nil
 			}
 		}
 		time.Sleep(time.Second)
 	}
 
-	return fmt.Errorf("failed to validate secret: timeout waiting for secret creation")
+	return fmt.Errorf("❌ failed to validate secret: timeout waiting for secret creation")
 }
 
 func (e *Encryptor) kubectlApply(manifest []byte) error {
@@ -301,11 +306,20 @@ func (e *Encryptor) extractEncryptedValue() (string, error) {
 			}
 		}
 	}
-	return "", fmt.Errorf("encrypted value not found in sealed secret")
+	return "", fmt.Errorf("❌ encrypted value not found in sealed secret")
 }
 
 func (e *Encryptor) printResult(encryptedValue string) {
-	fmt.Printf("\nUsing sealed-secrets in %s on %s deployment.\n\n", e.config.ControllerNs, e.config.ControllerName)
-	fmt.Printf("String vaulted:\n%s\n\n", encryptedValue)
-	fmt.Printf("This secret only valid in namespace %s.\n", e.config.Namespace)
+	titleColor := color.New(color.FgCyan, color.Bold)
+	infoColor := color.New(color.FgGreen)
+	valueColor := color.New(color.FgYellow)
+
+	titleColor.Printf("\n🎉 Sealed Secret Generated Successfully\n")
+	infoColor.Printf("\n📦 Controller: ")
+	fmt.Printf("%s/%s\n", e.config.ControllerNs, e.config.ControllerName)
+	infoColor.Printf("🌐 Namespace: ")
+	fmt.Printf("%s\n", e.config.Namespace)
+	infoColor.Printf("\n🔑 Encrypted Value:\n")
+	valueColor.Printf("%s\n", encryptedValue)
+	titleColor.Printf("\n✨ Secret is ready to use!\n")
 }

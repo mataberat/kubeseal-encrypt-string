@@ -29,6 +29,7 @@ func main() {
 	flags.StringVar(&config.Key, "key", "", "Secret key")
 	flags.StringVar(&config.Value, "value", "", "Secret value (raw, will be base64 encoded)")
 	flags.StringVar(&config.Namespace, "namespace", "", "Target namespace")
+	flags.StringVar(&config.SecretName, "secret-name", "", "Name of the secret to be created") // Add this line
 	flags.StringVar(&config.ControllerNs, "controller-namespace", config.ControllerNs, "Sealed secrets controller namespace")
 	flags.StringVar(&config.ControllerName, "controller-name", config.ControllerName, "Sealed secrets controller deployment name")
 

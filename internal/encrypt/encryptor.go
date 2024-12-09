@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/fatih/color"
 	"github.com/google/uuid"
@@ -50,10 +49,6 @@ func (e *Encryptor) Execute() error {
 
 	encryptedValue, err := e.extractEncryptedValue()
 	if err != nil {
-		return err
-	}
-
-	if err := e.validateSecret(encryptedValue); err != nil {
 		return err
 	}
 
@@ -123,7 +118,7 @@ metadata:
 type: Opaque
 data:
   %s: %s
-`, e.testName, e.config.Namespace, e.config.Key, strings.TrimSpace(encodedValue))
+`, e.config.SecretName, e.config.Namespace, e.config.Key, strings.TrimSpace(encodedValue))
 
 	return os.WriteFile(unsealedPath, []byte(secretYaml), 0600)
 }
@@ -198,41 +193,6 @@ func (e *Encryptor) runKubeseal() error {
 	}
 
 	return nil
-}
-
-func (e *Encryptor) validateSecret(encryptedValue string) error {
-	color.New(color.FgCyan).Printf("\n🔍 Validating sealed secret: %s\n", e.testName)
-
-	sealedSecret := fmt.Sprintf(`apiVersion: bitnami.com/v1alpha1
-kind: SealedSecret
-metadata:
-  name: %s
-  namespace: %s
-spec:
-  encryptedData:
-    %s: %s`, e.testName, e.config.Namespace, e.config.Key, encryptedValue)
-
-	if err := e.kubectlApply([]byte(sealedSecret)); err != nil {
-		return fmt.Errorf("❌ failed to apply test sealed secret: %w", err)
-	}
-	defer e.cleanupTestResources(e.testName)
-
-	color.New(color.FgYellow).Println("⏳ Waiting for secret creation...")
-	for i := 0; i < 10; i++ {
-		if secretValue, err := e.getSecretValue(e.testName, e.config.Key); err == nil {
-			decodedValue, err := e.decodeBase64(secretValue)
-			if err != nil {
-				return fmt.Errorf("❌ failed to decode secret value: %w", err)
-			}
-			if decodedValue == e.config.Value {
-				color.New(color.FgGreen).Println("✅ Secret validation successful")
-				return nil
-			}
-		}
-		time.Sleep(time.Second)
-	}
-
-	return fmt.Errorf("❌ failed to validate secret: timeout waiting for secret creation")
 }
 
 func (e *Encryptor) kubectlApply(manifest []byte) error {

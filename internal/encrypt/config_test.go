@@ -1,8 +1,6 @@
 package encrypt
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestConfig_Validate(t *testing.T) {
 	tests := []struct {
@@ -16,6 +14,7 @@ func TestConfig_Validate(t *testing.T) {
 				Key:            "test-key",
 				Value:          "test-value",
 				Namespace:      "test-ns",
+				SecretName:     "test-secret",
 				ControllerNs:   "kube-system",
 				ControllerName: "sealed-secrets-controller",
 			},
@@ -26,6 +25,7 @@ func TestConfig_Validate(t *testing.T) {
 			config: Config{
 				Value:          "test-value",
 				Namespace:      "test-ns",
+				SecretName:     "test-secret",
 				ControllerNs:   "kube-system",
 				ControllerName: "sealed-secrets-controller",
 			},
@@ -36,6 +36,7 @@ func TestConfig_Validate(t *testing.T) {
 			config: Config{
 				Key:            "test-key",
 				Namespace:      "test-ns",
+				SecretName:     "test-secret",
 				ControllerNs:   "kube-system",
 				ControllerName: "sealed-secrets-controller",
 			},
@@ -46,6 +47,7 @@ func TestConfig_Validate(t *testing.T) {
 			config: Config{
 				Key:            "test-key",
 				Value:          "test-value",
+				SecretName:     "test-secret",
 				ControllerNs:   "kube-system",
 				ControllerName: "sealed-secrets-controller",
 			},
@@ -75,6 +77,7 @@ func TestConfig_ValidateControllerSettings(t *testing.T) {
 				Key:            "test-key",
 				Value:          "test-value",
 				Namespace:      "test-ns",
+				SecretName:     "test-secret",
 				ControllerNs:   "kube-system",
 				ControllerName: "sealed-secrets-controller",
 			},
@@ -86,6 +89,7 @@ func TestConfig_ValidateControllerSettings(t *testing.T) {
 				Key:            "test-key",
 				Value:          "test-value",
 				Namespace:      "test-ns",
+				SecretName:     "test-secret",
 				ControllerNs:   "custom-ns",
 				ControllerName: "custom-controller",
 			},
@@ -94,9 +98,10 @@ func TestConfig_ValidateControllerSettings(t *testing.T) {
 		{
 			name: "empty controller settings",
 			config: Config{
-				Key:       "test-key",
-				Value:     "test-value",
-				Namespace: "test-ns",
+				Key:        "test-key",
+				Value:      "test-value",
+				Namespace:  "test-ns",
+				SecretName: "test-secret",
 			},
 			wantErr: true,
 		},

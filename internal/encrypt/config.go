@@ -11,6 +11,7 @@ type Config struct {
 	Namespace      string
 	ControllerNs   string
 	ControllerName string
+	SecretName     string
 }
 
 func NewConfig() *Config {
@@ -28,8 +29,8 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func (c *Config) Validate() error {
-	if c.Key == "" || c.Value == "" || c.Namespace == "" {
-		return fmt.Errorf("key, value, and namespace are required")
+	if c.Key == "" || c.Value == "" || c.Namespace == "" || c.SecretName == "" {
+		return fmt.Errorf("key, value, namespace, and secret-name are required")
 	}
 	if c.ControllerNs == "" || c.ControllerName == "" {
 		return fmt.Errorf("controller namespace and name are required")

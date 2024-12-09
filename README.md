@@ -19,6 +19,10 @@ Installing [kubeseal](https://github.com/bitnami-labs/sealed-secrets?tab=readme-
 - Automatic validation of encrypted secrets
 - Namespace-scoped encryption
 
+## Unsupported
+
+- Labels and annotations
+
 ## Installation
 
 //TODO
@@ -35,13 +39,13 @@ make build
 
 ```bash
 # Basic usage with required flags
-kubeseal-encrypt-string --key mysecret --value supersecret --namespace production
+kubeseal-encrypt-string --key mysecret --value supersecret --namespace production --secret-name my-secret
 
 # Using custom controller namespace
-kubeseal-encrypt-string --key mysecret --value supersecret --namespace production --controller-namespace sealed-secrets
+kubeseal-encrypt-string --key mysecret --value supersecret --namespace production --controller-namespace sealed-secrets --secret-name my-secret
 
 # Using custom controller name and namespace
-kubeseal-encrypt-string --key mysecret --value supersecret --namespace production --controller-namespace sealed-secrets --controller-name sealed-secrets
+kubeseal-encrypt-string --key mysecret --value supersecret --namespace production --controller-namespace sealed-secrets --controller-name sealed-secrets --secret-name my-secret
 
 # Using environment variables for controller config
 export SEALED_SECRETS_CONTROLLER_NAMESPACE=sealed-secrets
